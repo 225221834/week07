@@ -155,9 +155,11 @@ jobs:
         run: |
           az acr login --name ${{ vars.ACR_NAME }}
 
+      #build and push Docker image for each service
+      #build command specifies the platform as linux/amd64 to ensure compatibility with Azure Container Registry
       - name: Build and Push Docker image
         run: |
-          docker buildx build \
+          docker buildx build \ 
             --platform linux/amd64 \
             --push \
             -t ${{ vars.ACR_LOGIN_SERVER }}/${{ matrix.image }}:${{ github.sha }} \
