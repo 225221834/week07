@@ -125,7 +125,7 @@ jobs:
 
       - name: Run frontend tests
         working-directory: frontend
-          npx vitest run 
+        run: npm test -- --run
 
   # =========================================================
   # Build and Push Docker Images
