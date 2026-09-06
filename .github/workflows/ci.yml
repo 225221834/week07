@@ -155,6 +155,8 @@ jobs:
         run: |
           az acr login --name ${{ vars.ACR_NAME }}
 
+      #build command for docker image
+      #buildx is used to build multi-platform images
       - name: Build and Push Docker image
         run: |
           docker buildx build \
