@@ -8,6 +8,7 @@ on:
   # Manual trigger for the workflow
   workflow_dispatch:
 
+
 jobs:
 
   # =========================================================
@@ -153,8 +154,7 @@ jobs:
       - name: Login to Azure Container Registry
         run: |
           az acr login --name ${{ vars.ACR_NAME }}
-      # build and push Docker image for each service
-      # buildx is used to build multi-platform images (linux/amd64)
+
       - name: Build and Push Docker image
         run: |
           docker buildx build \
