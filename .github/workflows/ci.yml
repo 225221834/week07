@@ -1,6 +1,10 @@
 name: CI Pipeline
 
 on:
+  # Trigger automatically on git push
+  push:
+    branches:
+      - main
   # Manual trigger for the workflow
   workflow_dispatch:
 
@@ -139,6 +143,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Login to Azure
         uses: azure/login@v2.2.0
         with:
@@ -148,20 +155,11 @@ jobs:
         run: |
           az acr login --name ${{ vars.ACR_NAME }}
 
-      - name: Build Docker image
+      - name: Build and Push Docker image
         run: |
           docker buildx build \
             --platform linux/amd64 \
+            --push \
             -t ${{ vars.ACR_LOGIN_SERVER }}/${{ matrix.image }}:${{ github.sha }} \
             -t ${{ vars.ACR_LOGIN_SERVER }}/${{ matrix.image }}:latest \
             ./${{ matrix.service }}
-
-      - name: Push Docker image with commit SHA
-        run: |
-          docker buildx push \
-            ${{ vars.ACR_LOGIN_SERVER }}/${{ matrix.image }}:${{ github.sha }}
-
-      - name: Push Docker image with latest tag
-        run: |
-          docker buildx push \
-            ${{ vars.ACR_LOGIN_SERVER }}/${{ matrix.image }}:latest
