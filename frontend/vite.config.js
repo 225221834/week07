@@ -18,7 +18,7 @@ export default defineConfig({
     globals: true,
     environment: "jsdom",
     setupFiles: "./src/test/setup.js",
-    // Provide dummy values so tests can run without a real .env
+    // Providing dummy values so tests can run without a real .env
     env: {
       VITE_USER_SERVICE_URL: "http://localhost:8001",
       VITE_STUDENT_SERVICE_URL: "http://localhost:8002",
