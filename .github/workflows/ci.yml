@@ -173,16 +173,16 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-and-push          # only runs if images were pushed successfully
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-    env:
-      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+    #env:
+      #ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     steps:
       - name: Login to Azure
-        uses: azure/login@v2
+        uses: azure/login@v3
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Deploy Frontend Container App
-        uses: azure/container-apps-deploy-action@v2
+        uses: azure/container-apps-deploy-action@v3
         with:
           resourceGroup: week07-rg          # change if different
           containerAppName: koalatech-app
