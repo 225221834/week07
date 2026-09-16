@@ -168,24 +168,22 @@ jobs:
   # =========================================================
   # Deploy Frontend to Azure Container Apps
   # =========================================================
-  deploy-frontend:
-  name: Deploy Frontend
-  runs-on: ubuntu-latest
-  needs: build-and-push          # only runs if images were pushed successfully
-  if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    deploy-frontend:
+    name: Deploy Frontend
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    env:
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+    steps:
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-  env:
-    ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
-
-  steps:
-    - name: Login to Azure
-      uses: azure/login@v2
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-    - name: Deploy Frontend Container App
-      uses: azure/container-apps-deploy-action@v2
-      with:
-        resourceGroup: week07-rg                    # change if different
-        containerAppName: koalatech-app
-        imageToDeploy: ${{ vars.ACR_LOGIN_SERVER }}/koalatech-frontend:${{ github.sha }}
+      - name: Deploy Frontend Container App
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          resourceGroup: week07-rg
+          containerAppName: koalatech-app
+          imageToDeploy: ${{ vars.ACR_LOGIN_SERVER }}/koalatech-frontend:${{ github.sha }}
