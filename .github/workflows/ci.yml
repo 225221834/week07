@@ -1,12 +1,11 @@
 name: CI Pipeline
 
 on:
-  # Trigger automatically on git push
   push:
     branches:
       - main
-  # Manual trigger for the workflow
   workflow_dispatch:
+
 env:
   ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
 
@@ -21,7 +20,6 @@ jobs:
 
     strategy:
       fail-fast: false
-      # Define a matrix of services to test, each with its own database and port
       matrix:
         include:
           - service: user-service
@@ -42,45 +40,17 @@ jobs:
 
           - service: enrollment-service
             database: enrollments
-            port: 5437 
-          
-  # =========================================================
-  # Frontend Testing
-  # =========================================================
-  frontend-test:
-    name: Test Frontend
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4   # or @v6 if you prefer
+            port: 5437
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: "npm"
-          cache-dependency-path: frontend/package-lock.json
-
-      - name: Install dependencies
-        working-directory: frontend
-        run: npm ci
-
-      - name: Run frontend tests
-        working-directory: frontend
-        run: npm test -- --run 
-        
     services:
       postgres:
         image: postgres:16
-
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: ${{ matrix.database }}
-
         ports:
           - ${{ matrix.port }}:5432
-
         options: >-
           --health-cmd="pg_isready -U postgres -d ${{ matrix.database }}"
           --health-interval=5s
@@ -93,20 +63,16 @@ jobs:
       POSTGRES_DB: ${{ matrix.database }}
       POSTGRES_HOST: localhost
       POSTGRES_PORT: ${{ matrix.port }}
-
       JWT_SECRET_KEY: koalatech-ci-test-secret
       JWT_ALGORITHM: HS256
       ACCESS_TOKEN_EXPIRE_MINUTES: 30
-
       DEFAULT_ADMIN_USERNAME: admin
       DEFAULT_ADMIN_EMAIL: admin@koalatech.edu.au
       DEFAULT_ADMIN_PASSWORD: AdminPassword123!
-
       AZURE_STORAGE_CONNECTION_STRING: ""
       AZURE_STORAGE_CONTAINER_NAME: ""
 
     steps:
-
       - name: Checkout repository
         uses: actions/checkout@v6
 
@@ -123,26 +89,47 @@ jobs:
 
       - name: Run tests
         working-directory: ${{ matrix.service }}
-        run: |
-          pytest -v
-    
+        run: pytest -v
+
+  # =========================================================
+  # Frontend Testing
+  # =========================================================
+  frontend-test:
+    name: Test Frontend
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run frontend tests
+        working-directory: frontend
+        run: npm test -- --run
+
   # =========================================================
   # Build and Push Docker Images
   # =========================================================
   build-and-push:
     name: Build and Push ${{ matrix.image }}
     runs-on: ubuntu-latest
-
-    # All backend tests must pass before this job starts
     needs:
       - backend-test
-
-    # Build and push when code is pushed to main or manually triggered
+      - frontend-test
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
 
     strategy:
       fail-fast: false
-
       matrix:
         include:
           - service: frontend
@@ -164,7 +151,6 @@ jobs:
             image: koalatech-enrollment-service
 
     steps:
-
       - name: Checkout repository
         uses: actions/checkout@v6
 
@@ -177,11 +163,8 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Login to Azure Container Registry
-        run: |
-          az acr login --name ${{ vars.ACR_NAME }}
+        run: az acr login --name ${{ vars.ACR_NAME }}
 
-      #build command for docker image
-      #buildx is used to build multi-platform images
       - name: Build and Push Docker image
         run: |
           docker buildx build \
@@ -205,6 +188,7 @@ jobs:
         uses: azure/login@v3
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
+
       - name: Deploy Frontend Container App
         run: |
           az containerapp update \
