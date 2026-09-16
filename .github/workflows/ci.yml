@@ -184,6 +184,6 @@ jobs:
       - name: Deploy Frontend Container App
         uses: azure/container-apps-deploy-action@v2
         with:
-          resourceGroup: koalatech-week07-rg          # change if different
-          containerAppName: koalatech-frontend
+          resourceGroup: week07-rg          # change if different
+          containerAppName: koalatech-app
           imageToDeploy: ${{ vars.ACR_LOGIN_SERVER }}/koalatech-frontend:${{ github.sha }}
