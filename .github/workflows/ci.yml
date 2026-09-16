@@ -43,6 +43,10 @@ jobs:
           - service: enrollment-service
             database: enrollments
             port: 5437 
+          # Add frontend service to the matrix for testing
+          - service: frontend
+            database: frontend
+            port: 5438
 
     services:
       postgres:
@@ -180,7 +184,6 @@ jobs:
         uses: azure/login@v3
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
-
       - name: Deploy Frontend Container App
         run: |
           az containerapp update \
