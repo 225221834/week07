@@ -181,7 +181,7 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Deploy Frontend Container App
-        uses: azure/container-apps-deploy-action@v2
+        uses: azure/container-apps-deploy-action@v3
         with:
           resourceGroup: week07-rg          # change if different
           containerAppName: koalatech-app
